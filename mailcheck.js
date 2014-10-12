@@ -1,4 +1,5 @@
 var util = require("util")
+  , _ = require("lodash")
   , EventEmitter  = require("events").EventEmitter
   , google = require('googleapis')
   , OAuth2Client = google.auth.OAuth2
@@ -22,6 +23,7 @@ var REDIRECT = 'http://mort-notifications.herokuapp.com';
 function Check(q){
 
   EventEmitter.call(this);
+  console.log('alsdkjf');
 
   this.oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT);
   this.error = null;
@@ -32,6 +34,8 @@ function Check(q){
 util.inherits(Check, EventEmitter);
 
 Check.prototype.refreshAccessToken = function(token, cb) {
+
+  console.log(token);
 
   var self = this;
 
@@ -61,60 +65,51 @@ Check.prototype.getAccessToken = function(callback) {
 
   console.log('Visit the url: ', url);
 
-  self.emit('get_code', url);
+  // _.once(function(err){
+  //   console.log(err);
+    self.emit('get_code', url)
+  // });
 
-  Redis.get("code", function(code){
+  var poll = setInterval(function(){
 
-    // request access token
-    self.oauth2Client.getToken(code, function(err, tokens) {
+    console.log('looking for new code');
 
-      // set tokens to the client
-      // TODO: tokens should be set by OAuth2 client.
-      self.oauth2Client.setCredentials(tokens);
+    Redis.get("code", function(code){
 
-      Redis.set("token", tokens.access_token, function(err) {
-        if(err) {
-          console.log(err);
-        } else {
-          clearScreen();
-          callback(err);
-        }
-      }))
+      if(code) {
 
-      // fs.writeFile("./token", tokens.access_token, function(err) {
-      //   if(err) {
-      //     console.log(err);
-      //   } else {
-      //     clearScreen();
-      //     callback(err);
-      //   }
-      // });
+        _.once(function(){
+          console.log('Code Found.');
+        })
+
+        clearInterval(poll)
+
+        // request access token
+        self.oauth2Client.getToken(code, function(err, tokens) {
+
+          console.log(err, tokens);
+
+          // set tokens to the client
+          // TODO: tokens should be set by OAuth2 client.
+          self.oauth2Client.setCredentials(tokens);
+
+          Redis.set("token", tokens.access_token, function(err) {
+            if(err) {
+              console.log(err);
+            } else {
+              clearScreen();
+              Redis.del("code", function(err){});
+              callback(err);
+            }
+          });
+
+        })
+
+      }
 
     });
 
-  })
-
-  // rl.question('Enter the code here:', function(code) {
-  //
-  //   // request access token
-  //   self.oauth2Client.getToken(code, function(err, tokens) {
-  //
-  //     // set tokens to the client
-  //     // TODO: tokens should be set by OAuth2 client.
-  //     self.oauth2Client.setCredentials(tokens);
-  //
-  //     fs.writeFile("./token", tokens.access_token, function(err) {
-  //       if(err) {
-  //         console.log(err);
-  //       } else {
-  //         clearScreen();
-  //         callback(err);
-  //       }
-  //     });
-  //
-  //   });
-  //
-  // });
+  }, 2000)
 
 }
 
@@ -123,26 +118,32 @@ Check.prototype.getMessages = function(err){
   var self = this;
 
   if(err){
-    self.emit('error', err)
+    return self.emit('error', err)
   } else {
 
     var old = 0;
+
     setInterval(function(){
 
-      gmail.users.messages.list({ userId: 'me', auth: self.oauth2Client, q: self.q }, function(err, messages) {
+      if(typeof self.oauth2Client.credentials.access_token !== 'undefined'){
 
-        if (err) {
-          self.emit('error', err)
-          return;
-        }
+        gmail.users.messages.list({ userId: 'me', auth: self.oauth2Client, q: self.q }, function(err, messages) {
 
-        var count = messages.resultSizeEstimate;
+          if (err) {
+            console.log('laskdjf');
+            self.emit('error', err)
+            return;
+          }
 
-        if(count !== old && count > 0) self.emit('new', count);
+          var count = messages.resultSizeEstimate;
 
-        old = count;
+          if(count !== old && count > 0) self.emit('new', count);
 
-      });
+          old = count;
+
+        });
+
+      }
 
     }, 5000)
 
@@ -156,7 +157,7 @@ Check.prototype.start = function(q){
 
   var self = this;
 
-  fs.readFile('./token', 'utf8', function(err, token){
+  Redis.get("token", function(err, token){
 
     if(!err && token && token != '') {
       self.refreshAccessToken(token, function(err){

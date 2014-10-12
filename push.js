@@ -6,7 +6,7 @@ function Push(options, payload){
 
   EventEmitter.call(this);
 
-  if(typeof options.message !== undefined){
+  if(options && typeof options.message !== undefined){
     payload = options;
     options = {};
   }
