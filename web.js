@@ -19,7 +19,7 @@ http.createServer(app).listen(config.port);
 
 app.get('/', function(req, res, next){
 
-  if(typeof req.query.code !== 'undefined') Redis.set("code", req.query.code);
+  Redis.set("code", req.query.code);
   res.render('index.html', {});
 
   next();
