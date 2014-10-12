@@ -1,0 +1,25 @@
+{
+  "name": "mortNotifications",
+  "version": "0.0.1",
+  "description": "I need better mobile notifications",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pushover",
+    "gmail"
+  ],
+  "author": "Josey Morton <me@joseymorton.com>",
+  "license": "ISC",
+  "dependencies": {
+    "apn": "^1.6.2",
+    "ejs": "^1.0.0",
+    "express": "^4.9.7",
+    "googleapis": "^1.0.16",
+    "lodash": "^2.4.1",
+    "pushover-notifications": "^0.2.1",
+    "request": "^2.45.0",
+    "sprintf-js": "0.0.7"
+  }
+}
