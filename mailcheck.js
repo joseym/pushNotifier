@@ -1,4 +1,5 @@
 var util = require("util")
+  , config = require('./config')(process.env.ENV)
   , _ = require("lodash")
   , EventEmitter  = require("events").EventEmitter
   , google = require('googleapis')
@@ -11,7 +12,6 @@ var util = require("util")
       input: process.stdin,
       output: process.stdout
     })
-  , Redis = require('./db.js')();
 ;
 
 function clearScreen(){ process.stdout.write('\033c'); }
@@ -20,10 +20,13 @@ var CLIENT_ID = '468852991253-i78lvlgq0oeuf80i31te26bs82nms03f.apps.googleuserco
 var CLIENT_SECRET = 'EOY8hjXAjhdqMFnWMhy0bPps';
 var REDIRECT = 'http://mort-notifications.herokuapp.com';
 
-function Check(q){
+var client;
+
+function Check(q, redis){
+
+  client = redis;
 
   EventEmitter.call(this);
-  console.log('alsdkjf');
 
   this.oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT);
   this.error = null;
@@ -74,7 +77,7 @@ Check.prototype.getAccessToken = function(callback) {
 
     console.log('looking for new code');
 
-    Redis.get("code", function(code){
+    client.get("code", function(code){
 
       if(code) {
 
@@ -93,12 +96,12 @@ Check.prototype.getAccessToken = function(callback) {
           // TODO: tokens should be set by OAuth2 client.
           self.oauth2Client.setCredentials(tokens);
 
-          Redis.set("token", tokens.access_token, function(err) {
+          client.set("token", tokens.access_token, function(err) {
             if(err) {
               console.log(err);
             } else {
               clearScreen();
-              Redis.del("code", function(err){});
+              client.del("code", function(err){});
               callback(err);
             }
           });
@@ -157,7 +160,7 @@ Check.prototype.start = function(q){
 
   var self = this;
 
-  Redis.get("token", function(err, token){
+  client.get("token", function(err, token){
 
     if(!err && token && token != '') {
       self.refreshAccessToken(token, function(err){

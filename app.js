@@ -1,22 +1,28 @@
+var config = require('./config')(process.env.ENV)
+  , redis = require("redis")
+  , rtg = require("url").parse(config.redis)
+  , client = redis.createClient(rtg.port, rtg.hostname);
+
+client.auth(rtg.auth.split(":")[1]);
+
 var Push = require('./push.js')
   , Gmail = require('./mailcheck.js')
   , sprintf = require("sprintf-js").sprintf
-  , Redis = require('./db.js')();
+;
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
 // var q = 'from:alliebaldridge@gmail.com is:unread';
 var q = 'from:jmorton@mortlabs.com is:unread';
 
-// Redis.get("code", function(err, reply){
-//   console.log(reply)
-// })
-
+client.get("code", function(err, stuff){
+  console.log(stuff);
+})
 /**
  * Gmail check method
  * @type {Gmail}
  */
-var check = new Gmail(q);
+var check = new Gmail(q, client);
 
 check.on('get_code', function(url){
 
@@ -93,9 +99,6 @@ check.on('new', function(count){
 });
 
 
-clearScreen();
+// clearScreen();
 
-Redis.get("code", function(code){
-  console.log(code);
-})
-// check.start()
+check.start()

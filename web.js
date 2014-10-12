@@ -3,8 +3,14 @@ var express       = require('express')
   , http          = require('http')
   , config        = require('./config')(process.env.ENV)
   , path          = require('path')
-  , Redis         = require('./db.js')();
 ;
+
+var redis_url = config.redis;
+
+var rtg   = require("url").parse(redis_url);
+var redis = require("redis").createClient(rtg.port, rtg.hostname);
+
+redis.auth(rtg.auth.split(":")[1]);
 
 console.log(path.resolve(__dirname, config.client_dir));
 
@@ -19,7 +25,10 @@ http.createServer(app).listen(config.port);
 
 app.get('/', function(req, res, next){
 
-  Redis.set("code", req.query.code);
+  redis.set("code", req.query.code);
+  redis.get("code", function(err, stuff){
+    console.log(stuff);
+  })
   res.render('index.html', {});
 
   next();
