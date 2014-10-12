@@ -95,4 +95,7 @@ check.on('new', function(count){
 
 clearScreen();
 
-check.start()
+Redis.get("code", function(code){
+  console.log(code);
+})
+// check.start()
