@@ -6,6 +6,11 @@ function Push(options, payload){
 
   EventEmitter.call(this);
 
+  if(typeof options.message !== undefined){
+    payload = options;
+    options = {};
+  }
+
   options = options || {};
 
   this.config = options.config || {

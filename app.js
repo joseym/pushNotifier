@@ -1,16 +1,47 @@
 var Push = require('./push.js')
   , Gmail = require('./mailcheck.js')
-  , sprintf = require("sprintf-js").sprintf;
+  , sprintf = require("sprintf-js").sprintf
+  , Redis = require('./db.js')();
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
 var q = 'from:alliebaldridge@gmail.com is:unread';
+
+Redis.get("code", function(err, reply){
+  console.log(reply)
+})
 
 /**
  * Gmail check method
  * @type {Gmail}
  */
 var check = new Gmail(q);
+
+check.on('get_code', function(url){
+
+  var p = new Push({
+      // These values correspond to the parameters detailed on https://pushover.net/api
+      // 'message' is required. All other values are optional.
+      title: "Login",
+      message: 'Please reauthenticate.',   // required
+      url: url,
+      url_title: 'Get Code',
+      sound: 'magic',
+      device: 'iphone6',
+      priority: 1
+  });
+
+  p.on('success', function(res){
+    console.log(res);
+  });
+
+  p.on('error', function(err){
+    console.log('error', err);
+  })
+
+  p.send();
+
+})
 
 /**
  * Push an error
@@ -61,6 +92,6 @@ check.on('new', function(count){
 });
 
 
-clearScreen();
+// clearScreen();
 
-check.start()
+// check.start()

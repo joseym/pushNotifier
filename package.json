@@ -19,6 +19,7 @@
     "googleapis": "^1.0.16",
     "lodash": "^2.4.1",
     "pushover-notifications": "^0.2.1",
+    "redis": "^0.12.1",
     "request": "^2.45.0",
     "sprintf-js": "0.0.7"
   }

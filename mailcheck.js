@@ -10,13 +10,14 @@ var util = require("util")
       input: process.stdin,
       output: process.stdout
     })
-  ;
+  , Redis = require('./db.js')();
+;
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
 var CLIENT_ID = '468852991253-i78lvlgq0oeuf80i31te26bs82nms03f.apps.googleusercontent.com';
 var CLIENT_SECRET = 'EOY8hjXAjhdqMFnWMhy0bPps';
-var REDIRECT = 'http://localhost:5555';
+var REDIRECT = 'http://mort-notifications.herokuapp.com';
 
 function Check(q){
 
@@ -60,7 +61,9 @@ Check.prototype.getAccessToken = function(callback) {
 
   console.log('Visit the url: ', url);
 
-  rl.question('Enter the code here:', function(code) {
+  self.emit('get_code', url);
+
+  Redis.get("code", function(code){
 
     // request access token
     self.oauth2Client.getToken(code, function(err, tokens) {
@@ -69,18 +72,49 @@ Check.prototype.getAccessToken = function(callback) {
       // TODO: tokens should be set by OAuth2 client.
       self.oauth2Client.setCredentials(tokens);
 
-      fs.writeFile("./token", tokens.access_token, function(err) {
+      Redis.set("token", tokens.access_token, function(err) {
         if(err) {
           console.log(err);
         } else {
           clearScreen();
           callback(err);
         }
-      });
+      }))
+
+      // fs.writeFile("./token", tokens.access_token, function(err) {
+      //   if(err) {
+      //     console.log(err);
+      //   } else {
+      //     clearScreen();
+      //     callback(err);
+      //   }
+      // });
 
     });
 
-  });
+  })
+
+  // rl.question('Enter the code here:', function(code) {
+  //
+  //   // request access token
+  //   self.oauth2Client.getToken(code, function(err, tokens) {
+  //
+  //     // set tokens to the client
+  //     // TODO: tokens should be set by OAuth2 client.
+  //     self.oauth2Client.setCredentials(tokens);
+  //
+  //     fs.writeFile("./token", tokens.access_token, function(err) {
+  //       if(err) {
+  //         console.log(err);
+  //       } else {
+  //         clearScreen();
+  //         callback(err);
+  //       }
+  //     });
+  //
+  //   });
+  //
+  // });
 
 }
 

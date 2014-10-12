@@ -2,7 +2,9 @@ var express       = require('express')
   , app           = express()
   , http          = require('http')
   , config        = require('./config')(process.env.ENV)
-    path          = require('path');
+  , path          = require('path')
+  , Redis         = require('./db.js')();
+;
 
 console.log(path.resolve(__dirname, config.client_dir));
 
@@ -15,6 +17,16 @@ app.engine('html', require('ejs').renderFile);
 
 http.createServer(app).listen(config.port);
 
+app.get('/', function(req, res, next){
+
+  if(typeof req.query.code !== 'undefined') Redis.set("code", req.query.code);
+  res.render('index.html', {});
+
+  next();
+
+})
+
+
 app.all('*', function (req, res, next) {
 
   if (req.params[0].match(/\.(png|jpg|jpeg|gif|css|js|mp3|swf)$/)) {
@@ -22,9 +34,6 @@ app.all('*', function (req, res, next) {
     return next()
   }
 
-  res.render('index.html', {});
-
 });
-
 
 console.log(config.host + ':' + config.port);
