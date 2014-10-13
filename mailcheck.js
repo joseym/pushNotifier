@@ -78,9 +78,10 @@ Check.prototype.getAccessToken = function(callback) {
     console.log('looking for new code');
 
     client.get("code", function(err, code){
-      console.log(code);
 
       if(code) {
+
+        console.log(code);
 
         _.once(function(){
           console.log('Code Found.');
@@ -98,7 +99,9 @@ Check.prototype.getAccessToken = function(callback) {
           self.oauth2Client.setCredentials(tokens);
 
           client.set("token", tokens.access_token)
-          client.del("code", function(err){});
+          client.del("code", function(err){
+            self.getMessages(err);
+          });
 
         })
 
@@ -127,7 +130,6 @@ Check.prototype.getMessages = function(err){
         gmail.users.messages.list({ userId: 'me', auth: self.oauth2Client, q: self.q }, function(err, messages) {
 
           if (err) {
-            console.log('laskdjf');
             self.emit('error', err)
             return;
           }
