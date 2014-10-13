@@ -19,8 +19,8 @@ client.get("code", function(err, stuff){
   console.log(stuff);
 });
 
-redis.del('code');
-redis.del('token');
+client.del('code');
+client.del('token');
 
 /**
  * Gmail check method
