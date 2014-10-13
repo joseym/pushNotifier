@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var config = require('./config')(process.env.ENV)
   , redis = require("redis")
   , rtg = require("url").parse(config.redis)
@@ -11,8 +13,6 @@ var Push = require('./push.js')
 ;
 
 function clearScreen(){ process.stdout.write('\033c'); }
-
-console.log('<middle-fucking-finger times=2 />');
 
 // var q = 'from:alliebaldridge@gmail.com is:unread';
 var q = 'from:(alliebaldridge@gmail.com OR jmorton@mortlabs.com) is:unread';
