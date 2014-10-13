@@ -12,6 +12,8 @@ var Push = require('./push.js')
   , sprintf = require("sprintf-js").sprintf
 ;
 
+//asldkfjsad
+
 function clearScreen(){ process.stdout.write('\033c'); }
 
 // var q = 'from:alliebaldridge@gmail.com is:unread';
