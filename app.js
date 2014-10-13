@@ -12,15 +12,14 @@ var Push = require('./push.js')
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
+console.log('test');
+
 // var q = 'from:alliebaldridge@gmail.com is:unread';
-var q = 'from:(alliebaldridge@gmail.com OR bradinthehouse@gmail.com OR Brad.Fair@interworks.com OR brad@bradfair.com OR jmorton@mortlabs.com) is:unread';
+var q = 'from:(alliebaldridge@gmail.com OR jmorton@mortlabs.com) is:unread';
 
 client.get("code", function(err, stuff){
   console.log(stuff);
 });
-
-client.del('code');
-client.del('token');
 
 /**
  * Gmail check method
