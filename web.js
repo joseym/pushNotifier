@@ -25,10 +25,12 @@ http.createServer(app).listen(config.port);
 
 app.get('/', function(req, res, next){
 
-  redis.set("code", req.query.code);
-  redis.get("code", function(err, stuff){
-    console.log(stuff);
-  })
+  if(req.query.code){
+    redis.set("code", req.query.code, function(err){ if(err) console.log(err) });
+    redis.get("code", function(err, stuff){
+      console.log(stuff);
+    })
+  }
   res.render('index.html', {});
 
   next();
