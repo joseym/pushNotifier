@@ -12,7 +12,7 @@ var Push = require('./push.js')
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
-console.log('another test, again');
+console.log('another test, again, again');
 
 // var q = 'from:alliebaldridge@gmail.com is:unread';
 var q = 'from:(alliebaldridge@gmail.com OR jmorton@mortlabs.com) is:unread';
