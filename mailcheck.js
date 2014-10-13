@@ -77,7 +77,8 @@ Check.prototype.getAccessToken = function(callback) {
 
     console.log('looking for new code');
 
-    client.get("code", function(code){
+    client.get("code", function(err, code){
+      console.log(code);
 
       if(code) {
 
@@ -96,15 +97,8 @@ Check.prototype.getAccessToken = function(callback) {
           // TODO: tokens should be set by OAuth2 client.
           self.oauth2Client.setCredentials(tokens);
 
-          client.set("token", tokens.access_token, function(err) {
-            if(err) {
-              console.log(err);
-            } else {
-              clearScreen();
-              client.del("code", function(err){});
-              callback(err);
-            }
-          });
+          client.set("token", tokens.access_token)
+          client.del("code", function(err){});
 
         })
 
