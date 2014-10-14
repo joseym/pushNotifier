@@ -3,7 +3,9 @@
 var config = require('./config')(process.env.ENV)
   , redis = require("redis")
   , rtg = require("url").parse(config.redis)
-  , client = redis.createClient(rtg.port, rtg.hostname);
+  , client = redis.createClient(rtg.port, rtg.hostname)
+  , _ = require('lodash')
+;
 
 client.auth(rtg.auth.split(":")[1]);
 
@@ -68,11 +70,13 @@ check.on('error', function(err){
   var p = new Push();
 
   p.on('success', function(res){
-    console.log(res);
+    console.error(err);
+    process.exit(1);
   });
 
   p.title('Check Error');
   p.message(err.message);
+
 
   p.send();
 
