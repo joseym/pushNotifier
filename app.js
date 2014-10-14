@@ -23,10 +23,6 @@ function clearScreen(){ process.stdout.write('\033c'); }
 // var q = 'from:alliebaldridge@gmail.com is:unread';
 var q = 'from:(alliebaldridge@gmail.com OR jmorton@mortlabs.com) is:unread';
 
-client.get("code", function(err, stuff){
-  console.log(stuff);
-});
-
 /**
  * Gmail check method
  * @type {Gmail}

@@ -13,6 +13,7 @@ var time_remaining;
 function clearScreen(){ process.stdout.write('\033c'); }
 
 var CLIENT_ID = '468852991253-i78lvlgq0oeuf80i31te26bs82nms03f.apps.googleusercontent.com';
+// var CLIENT_ID = 'me@joseymorton.com';
 var CLIENT_SECRET = 'EOY8hjXAjhdqMFnWMhy0bPps';
 var REDIRECT = 'http://mort-notifications.herokuapp.com';
 
@@ -38,19 +39,38 @@ Check.prototype.refreshAccessToken = function(token, cb) {
 
   var self = this;
 
-  this.oauth2Client.refreshToken_(token, function(err, token){
-
-    if(err) {
-      return self.getAccessToken(cb);
-    }
-
+  /**
+   * Refresh Auth
+   */
+  client.get("token", function(err, access_token){
     if(!err){
-      self.oauth2Client.setCredentials(token);
-      client.set("expiration", token.expiry_date);
-      cb(err)
-    }
+      client.get("refresh", function(err, refresh_token){
+        if(!err){
 
-  });
+          self.oauth2Client.setCredentials({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
+
+          self.oauth2Client.refreshAccessToken(function(err, tokens){
+
+            if(err){
+              console.log(err);
+              client.del("code");
+              client.del("refresh");
+              client.del("token");
+              client.del("expiration");
+              return self.getAccessToken(cb);
+            } else {
+              return self.getMessages(null);
+            }
+
+          })
+
+        }
+      })
+    }
+  })
 
 }
 
@@ -66,7 +86,7 @@ Check.prototype.getAccessToken = function(callback) {
   var url = this.oauth2Client.generateAuthUrl({
     access_type: 'offline', // will return a refresh token
     scope: 'https://mail.google.com/' // can be a space-delimited string or an array of scopes
-  });
+  });// + "&approval_prompt=force";
 
   console.log('Visit the url: ', url);
 
@@ -89,12 +109,16 @@ Check.prototype.getAccessToken = function(callback) {
 
           if(tokens){
 
+            console.log('getToken Response', tokens);
+
             // set tokens to the client
             // TODO: tokens should be set by OAuth2 client.
             self.oauth2Client.setCredentials(tokens);
 
             client.set("token", tokens.access_token);
+            client.set("refresh", tokens.refresh_token);
             client.set("expiration", tokens.expiry_date);
+
             client.del("code", function(err){
               self.getMessages(err);
             });
