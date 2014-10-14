@@ -129,7 +129,7 @@ Check.prototype.getMessages = function(err){
 
         clearScreen();
 
-        if(time_remaining > 57){
+        if(time_remaining > 5){
           console.log("Token expires in %d minutes", time_remaining);
         } else {
           clearInterval(messagePoll);
