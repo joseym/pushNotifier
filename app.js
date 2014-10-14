@@ -12,8 +12,9 @@ var Push = require('./push.js')
   , sprintf = require("sprintf-js").sprintf
 ;
 
-//asldkfjsad
-//sdfasdf
+// client.del("code");
+// client.del("token");
+// client.del("expiration");
 
 function clearScreen(){ process.stdout.write('\033c'); }
 

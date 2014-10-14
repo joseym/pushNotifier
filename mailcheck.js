@@ -5,14 +5,10 @@ var util = require("util")
   , google = require('googleapis')
   , OAuth2Client = google.auth.OAuth2
   , gmail = google.gmail('v1')
-  , request = require('request')
-  , fs = require('fs')
-  , readline = require('readline')
-  , rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    })
+  , moment = require('moment')
 ;
+
+var time_remaining;
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
@@ -38,28 +34,34 @@ util.inherits(Check, EventEmitter);
 
 Check.prototype.refreshAccessToken = function(token, cb) {
 
-  console.log(token);
+  console.log('Refreshing Access Token')
 
   var self = this;
 
   this.oauth2Client.refreshToken_(token, function(err, token){
-    if(err){
 
+    if(err) {
       return self.getAccessToken(cb);
     }
-    self.oauth2Client.setCredentials(token);
-    cb(err)
+
+    if(!err){
+      self.oauth2Client.setCredentials(token);
+      client.set("expiration", token.expiry_date);
+      cb(err)
+    }
+
   });
 
 }
 
 Check.prototype.getAccessToken = function(callback) {
 
+  console.log('Getting Access Token');
+
   var self = this;
 
   self.emit('token_error');
 
-  // var _code = '4/RtvhFEsUnnt9metNEUwJnHUBWLXg2acg1h1FEie-Djw.cn460xfIjNAdEnp6UAPFm0H-FNL3kQI';
   // generate consent page url
   var url = this.oauth2Client.generateAuthUrl({
     access_type: 'offline', // will return a refresh token
@@ -68,40 +70,36 @@ Check.prototype.getAccessToken = function(callback) {
 
   console.log('Visit the url: ', url);
 
-  // _.once(function(err){
-  //   console.log(err);
-    self.emit('get_code', url)
-  // });
+  self.emit('get_code', url)
 
   var poll = setInterval(function(){
 
-    console.log('looking for new code');
+    console.log("Looking for a new code");
 
     client.get("code", function(err, code){
 
       if(code) {
-
-        console.log(code);
-
-        _.once(function(){
-          console.log('Code Found.');
-        })
 
         clearInterval(poll)
 
         // request access token
         self.oauth2Client.getToken(code, function(err, tokens) {
 
-          console.log(err, tokens);
+          if(err) console.log(err);
 
-          // set tokens to the client
-          // TODO: tokens should be set by OAuth2 client.
-          self.oauth2Client.setCredentials(tokens);
+          if(tokens){
 
-          client.set("token", tokens.access_token)
-          client.del("code", function(err){
-            self.getMessages(err);
-          });
+            // set tokens to the client
+            // TODO: tokens should be set by OAuth2 client.
+            self.oauth2Client.setCredentials(tokens);
+
+            client.set("token", tokens.access_token);
+            client.set("expiration", tokens.expiry_date);
+            client.del("code", function(err){
+              self.getMessages(err);
+            });
+
+          }
 
         })
 
@@ -123,7 +121,27 @@ Check.prototype.getMessages = function(err){
 
     var old = 0;
 
-    setInterval(function(){
+    var messagePoll = setInterval(function(){
+
+      client.get("expiration", function(err, exp){
+
+        time_remaining = (moment(parseInt(exp)).diff(Date.now(), 'minutes'));
+
+        clearScreen();
+
+        if(time_remaining > 57){
+          console.log("Token expires in %d minutes", time_remaining);
+        } else {
+          clearInterval(messagePoll);
+          client.get("token", function(err, token){
+            if(token){
+              self.refreshAccessToken(token, function(err){
+                return self.getMessages(err);
+              });
+            }
+          })
+        }
+      });
 
       if(typeof self.oauth2Client.credentials.access_token !== 'undefined'){
 

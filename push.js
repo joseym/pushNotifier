@@ -25,7 +25,7 @@ function Push(options, payload){
       title: "Mail",
       sound: 'magic',
       device: 'iphone6',
-      priority: 1
+      priority: 0
   };
 
   this.p = new push(this.config);
