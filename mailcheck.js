@@ -162,7 +162,7 @@ Check.prototype.getMessages = function(err){
 
       }
 
-    }, 5000)
+    }, 30000)
 
   }
 
