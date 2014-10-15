@@ -86,7 +86,7 @@ Check.prototype.getAccessToken = function(callback) {
   var url = this.oauth2Client.generateAuthUrl({
     access_type: 'offline', // will return a refresh token
     scope: 'https://mail.google.com/' // can be a space-delimited string or an array of scopes
-  });// + "&approval_prompt=force";
+  }) + "&approval_prompt=force";
 
   console.log('Visit the url: ', url);
 
@@ -108,8 +108,6 @@ Check.prototype.getAccessToken = function(callback) {
           if(err) console.log(err);
 
           if(tokens){
-
-            console.log('getToken Response', tokens);
 
             // set tokens to the client
             // TODO: tokens should be set by OAuth2 client.
@@ -135,6 +133,7 @@ Check.prototype.getAccessToken = function(callback) {
 
 }
 
+var old = 0;
 Check.prototype.getMessages = function(err){
 
   var self = this;
@@ -142,8 +141,6 @@ Check.prototype.getMessages = function(err){
   if(err){
     return self.emit('error', err)
   } else {
-
-    var old = 0;
 
     var messagePoll = setInterval(function(){
 
@@ -186,7 +183,7 @@ Check.prototype.getMessages = function(err){
 
       }
 
-    }, 30000)
+    }, 5000)
 
   }
 
