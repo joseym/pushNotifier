@@ -20,8 +20,7 @@ var Push = require('./push.js')
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
-// var q = 'from:alliebaldridge@gmail.com is:unread';
-var q = 'from:(alliebaldridge@gmail.com OR jmorton@mortlabs.com) is:unread';
+var q = 'from:(alliebaldridge@gmail.com) is:unread';
 
 /**
  * Gmail check method
