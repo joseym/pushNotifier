@@ -37,7 +37,7 @@ check.on('get_code', function(url){
       message: 'Please reauthenticate.',   // required
       url: url,
       url_title: 'Get Code',
-      sound: 'magic',
+      sound: 'bugle',
       device: 'iphone6',
       priority: 1
   });
@@ -70,8 +70,8 @@ check.on('error', function(err){
   });
 
   p.title('Check Error');
+  p.sound('siren');
   p.message(err.message);
-
 
   p.send();
 
@@ -91,9 +91,7 @@ check.on('new', function(count){
 
   var p = new Push();
 
-  p.on('success', function(res){
-    console.log(res);
-  });
+  p.on('success', function(res){  });
 
   var message = (count > 1) ?  sprintf("%1$d new messages", count) : sprintf("%1$b new message", count);
   console.log(sprintf("Pushing \"%s\" to your device.", message))

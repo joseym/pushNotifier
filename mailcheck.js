@@ -13,7 +13,6 @@ var time_remaining;
 function clearScreen(){ process.stdout.write('\033c'); }
 
 var CLIENT_ID = '468852991253-i78lvlgq0oeuf80i31te26bs82nms03f.apps.googleusercontent.com';
-// var CLIENT_ID = 'me@joseymorton.com';
 var CLIENT_SECRET = 'EOY8hjXAjhdqMFnWMhy0bPps';
 var REDIRECT = 'http://mort-notifications.herokuapp.com';
 

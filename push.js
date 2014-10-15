@@ -1,24 +1,27 @@
 var push = require('pushover-notifications')
   , util = require("util")
+  , _ = require("lodash")
   , EventEmitter  = require("events").EventEmitter;;
 
 function Push(options, payload){
 
   EventEmitter.call(this);
 
+  payload = payload || {};
+
   if(options && typeof options.message !== undefined){
     payload = options;
     options = {};
   }
 
-  options = options || {};
+  options = _.defaults(options, {});
 
-  this.config = options.config || {
+  this.config = {
     user: 'u9m7s9Jr12vcpNDirx64Zmvk7iSm7u',
     token: 'akWcbbNdPiM5ToyvXBSPNpPgZ1V9cw'
   }
 
-  this.payload = payload || {
+  var defaultPayload = {
       // These values correspond to the parameters detailed on https://pushover.net/api
       // 'message' is required. All other values are optional.
       message: 'New message',   // required
@@ -27,6 +30,8 @@ function Push(options, payload){
       device: 'iphone6',
       priority: 0
   };
+
+  this.payload = _.defaults(payload, defaultPayload);
 
   this.p = new push(this.config);
 
@@ -46,8 +51,15 @@ Push.prototype.message = function(string){
   return string;
 }
 
+Push.prototype.sound = function(string){
+  if(string) this.payload.sound = string;
+  return string;
+}
+
 Push.prototype.send = function(cb){
 
+
+  console.log(this.payload);
   cb = cb || function(err, result){};
 
   var self = this;
