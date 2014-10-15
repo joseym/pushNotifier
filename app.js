@@ -14,9 +14,14 @@ var Push = require('./push.js')
   , sprintf = require("sprintf-js").sprintf
 ;
 
-// client.del("code");
-// client.del("token");
-// client.del("expiration");
+if(_.indexOf(process.argv, "clear") >= 0){
+
+  client.del("code");
+  client.del("token");
+  client.del("expiration");
+  client.del("refresh");
+
+}
 
 function clearScreen(){ process.stdout.write('\033c'); }
 
@@ -29,6 +34,8 @@ var q = 'from:(alliebaldridge@gmail.com) is:unread';
 var check = new Gmail(q, client);
 
 check.on('get_code', function(url){
+
+  console.log(process.argv);
 
   var p = new Push({
       // These values correspond to the parameters detailed on https://pushover.net/api

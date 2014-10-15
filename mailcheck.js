@@ -85,51 +85,58 @@ Check.prototype.getAccessToken = function(callback) {
   var url = this.oauth2Client.generateAuthUrl({
     access_type: 'offline', // will return a refresh token
     scope: 'https://mail.google.com/' // can be a space-delimited string or an array of scopes
-  });// + "&approval_prompt=force";
+  });
 
-  console.log('Visit the url: ', url);
+  client.get("refresh", function(err, refresh_token){
 
-  self.emit('get_code', url)
+    console.log(refresh_token);
 
-  var poll = setInterval(function(){
+    if(!refresh_token) url += "&approval_prompt=force";
 
-    console.log("Looking for a new code");
+    console.log('Visit the url: ', url);
 
-    client.get("code", function(err, code){
+    self.emit('get_code', url)
 
-      if(code) {
+    var poll = setInterval(function(){
 
-        clearInterval(poll)
+      console.log("Looking for a new code");
 
-        // request access token
-        self.oauth2Client.getToken(code, function(err, tokens) {
+      client.get("code", function(err, code){
 
-          if(err) console.log(err);
+        if(code) {
 
-          if(tokens){
+          clearInterval(poll)
 
-            // set tokens to the client
-            // TODO: tokens should be set by OAuth2 client.
-            self.oauth2Client.setCredentials(tokens);
+          // request access token
+          self.oauth2Client.getToken(code, function(err, tokens) {
 
-            client.set("token", tokens.access_token);
-            client.set("refresh", tokens.refresh_token);
-            client.set("expiration", tokens.expiry_date);
+            if(err) console.log(err);
 
-            client.del("code", function(err){
-              self.getMessages(err);
-            });
+            if(tokens){
 
-          }
+              // set tokens to the client
+              // TODO: tokens should be set by OAuth2 client.
+              self.oauth2Client.setCredentials(tokens);
 
-        })
+              client.set("token", tokens.access_token);
+              client.set("refresh", tokens.refresh_token);
+              client.set("expiration", tokens.expiry_date);
 
-      }
+              client.del("code", function(err){
+                self.getMessages(err);
+              });
 
-    });
+            }
 
-  }, 2000)
+          })
 
+        }
+
+      });
+
+    }, 2000);
+
+  })
 }
 
 var old = 0;
