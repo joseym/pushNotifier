@@ -85,7 +85,7 @@ Check.prototype.getAccessToken = function(callback) {
   var url = this.oauth2Client.generateAuthUrl({
     access_type: 'offline', // will return a refresh token
     scope: 'https://mail.google.com/' // can be a space-delimited string or an array of scopes
-  }) + "&approval_prompt=force";
+  });// + "&approval_prompt=force";
 
   console.log('Visit the url: ', url);
 
