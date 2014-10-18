@@ -53,6 +53,8 @@ Check.prototype.refreshAccessToken = function(token, cb) {
 
           self.oauth2Client.refreshAccessToken(function(err, tokens){
 
+            console.log(tokens);console.log();
+
             if(err){
               console.log(err);
               client.del("code");
@@ -61,6 +63,9 @@ Check.prototype.refreshAccessToken = function(token, cb) {
               client.del("expiration");
               return self.getAccessToken(cb);
             } else {
+              client.set("token", tokens.access_token);
+              if(typeof tokens.refresh_token !== 'undefined') client.set("refresh", tokens.refresh_token);
+              client.set("expiration", tokens.expiry_date);
               return self.getMessages(null);
             }
 
@@ -162,8 +167,10 @@ Check.prototype.getMessages = function(err){
           clearInterval(messagePoll);
           client.get("token", function(err, token){
             if(token){
-              self.refreshAccessToken(token, function(err){
-                return self.getMessages(err);
+              _.once(function(){
+                self.refreshAccessToken(token, function(err){
+                  return self.getMessages(err);
+                });
               });
             }
           })
