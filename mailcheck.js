@@ -89,8 +89,6 @@ Check.prototype.getAccessToken = function(callback) {
 
   client.get("refresh", function(err, refresh_token){
 
-    console.log(refresh_token);
-
     if(!refresh_token) url += "&approval_prompt=force";
 
     console.log('Visit the url: ', url);
@@ -114,12 +112,14 @@ Check.prototype.getAccessToken = function(callback) {
 
             if(tokens){
 
+              console.log(tokens);
+
               // set tokens to the client
               // TODO: tokens should be set by OAuth2 client.
               self.oauth2Client.setCredentials(tokens);
 
               client.set("token", tokens.access_token);
-              client.set("refresh", tokens.refresh_token);
+              if(typeof tokens.refresh_token !== 'undefined') client.set("refresh", tokens.refresh_token);
               client.set("expiration", tokens.expiry_date);
 
               client.del("code", function(err){

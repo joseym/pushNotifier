@@ -19,7 +19,7 @@ if(_.indexOf(process.argv, "clear") >= 0){
   client.del("code");
   client.del("token");
   client.del("expiration");
-  client.del("refresh");
+  // client.del("refresh");
 
 }
 
