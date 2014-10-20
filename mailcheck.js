@@ -164,13 +164,12 @@ Check.prototype.getMessages = function(err){
         if(time_remaining > 5){
           console.log("Token expires in %d minutes", time_remaining);
         } else {
-          clearInterval(messagePoll);
           client.get("token", function(err, token){
             if(token){
-              _.once(function(){
-                self.refreshAccessToken(token, function(err){
-                  return self.getMessages(err);
-                });
+              self.refreshAccessToken(token, function(err){
+                console.log('Refreshing token and clearing loop');
+                clearInterval(messagePoll);
+                return self.getMessages(err);
               });
             }
           })
