@@ -56,6 +56,10 @@ Push.prototype.sound = function(string){
   return string;
 }
 
+Push.prototype.url = function(string){
+  if(string) this.payload.url = string;
+}
+
 Push.prototype.send = function(cb){
 
 
