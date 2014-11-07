@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+// test
 var config = require('./config')(process.env.ENV)
   , redis = require("redis")
   , rtg = require("url").parse(config.redis)
