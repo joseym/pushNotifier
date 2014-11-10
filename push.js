@@ -22,9 +22,6 @@ function Push(options, payload){
   }
 
   var defaultPayload = {
-      // These values correspond to the parameters detailed on https://pushover.net/api
-      // 'message' is required. All other values are optional.
-      message: 'New message',   // required
       title: "Mail",
       sound: 'magic',
       device: 'iphone6',
@@ -62,8 +59,6 @@ Push.prototype.url = function(string){
 
 Push.prototype.send = function(cb){
 
-
-  console.log(this.payload);
   cb = cb || function(err, result){};
 
   var self = this;

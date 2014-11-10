@@ -1,4 +1,5 @@
 .DS_Store
+config/environments.js
 node_modules/
 *.pem
 *.cer

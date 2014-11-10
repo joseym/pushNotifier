@@ -1,6 +1,6 @@
 var util = require("util")
-  , config = require('./config')(process.env.ENV)
-  , _ = require("lodash")
+  , config = GLOBAL.pushNotifier.config
+  , _ = GLOBAL.pushNotifier._
   , EventEmitter  = require("events").EventEmitter
   , google = require('googleapis')
   , OAuth2Client = google.auth.OAuth2
@@ -10,12 +10,6 @@ var util = require("util")
 
 var time_remaining;
 
-function clearScreen(){ process.stdout.write('\033c'); }
-
-var CLIENT_ID = '468852991253-i78lvlgq0oeuf80i31te26bs82nms03f.apps.googleusercontent.com';
-var CLIENT_SECRET = 'EOY8hjXAjhdqMFnWMhy0bPps';
-var REDIRECT = 'http://mort-notifications.herokuapp.com';
-
 var client;
 
 function Check(q, redis){
@@ -24,7 +18,7 @@ function Check(q, redis){
 
   EventEmitter.call(this);
 
-  this.oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT);
+  this.oauth2Client = new OAuth2Client(config.gmail.CLIENT_ID, config.gmail.CLIENT_SECRET, config.gmail.REDIRECT);
   this.error = null;
   this.q = q;
 
@@ -159,15 +153,13 @@ Check.prototype.getMessages = function(err){
 
         time_remaining = (moment(parseInt(exp)).diff(Date.now(), 'minutes'));
 
-        clearScreen();
+        // GLOBAL.pushNotifier.clearScreen();
 
-        if(time_remaining > 5){
-          console.log("Token expires in %d minutes", time_remaining);
-        } else {
+        if(time_remaining < 5){
           client.get("token", function(err, token){
             if(token){
               self.refreshAccessToken(token, function(err){
-                console.log('Refreshing token and clearing loop');
+                console.log('Refreshing token on ' + moment().format('MM/DD/YY [at] h:mma'));
                 clearInterval(messagePoll);
                 return self.getMessages(err);
               });

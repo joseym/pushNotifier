@@ -1,17 +1,31 @@
 #!/usr/bin/env node
-// test
-var config = require('./config')(process.env.ENV)
-  , redis = require("redis")
+
+/**
+ * Some controversy over using globals, but I find they're dandy for
+ * configuration and modules that are constantly required.
+ *
+ * Just be sure to namespace.
+ *
+ * @type {Object}
+ */
+GLOBAL.pushNotifier = {
+  config : require('./config')(process.env.ENV),
+  redis : require("redis"),
+  _ : require('lodash'),
+  clearScreen: function(){ process.stdout.write('\033c'); }
+};
+
+var config = GLOBAL.pushNotifier.config
   , rtg = require("url").parse(config.redis)
-  , client = redis.createClient(rtg.port, rtg.hostname)
-  , _ = require('lodash')
+  , client = GLOBAL.pushNotifier.redis.createClient(rtg.port, rtg.hostname)
+  , _ = GLOBAL.pushNotifier._
+  , sprintf = require("sprintf-js").sprintf
 ;
 
 client.auth(rtg.auth.split(":")[1]);
 
 var Push = require('./push.js')
   , Gmail = require('./mailcheck.js')
-  , sprintf = require("sprintf-js").sprintf
 ;
 
 if(_.indexOf(process.argv, "clear") >= 0){
@@ -19,13 +33,11 @@ if(_.indexOf(process.argv, "clear") >= 0){
   client.del("code");
   client.del("token");
   client.del("expiration");
-  // client.del("refresh");
 
 }
 
-function clearScreen(){ process.stdout.write('\033c'); }
-
-var q = 'from:(alliebaldridge@gmail.com) is:unread';
+// var q = 'from:(alliebaldridge@gmail.com) is:unread';
+var q = 'from:(*@mortlabs.com) is:unread';
 
 /**
  * Gmail check method
@@ -78,7 +90,7 @@ check.on('error', function(err){
 
   p.title('Check Error');
   p.sound('siren');
-  p.message(err.message);
+  p.message(err.toString());
 
   p.send();
 
@@ -94,14 +106,14 @@ check.on('error', function(err){
  */
 check.on('new', function(count){
 
-  clearScreen();
+  GLOBAL.pushNotifier.clearScreen();
 
   var p = new Push();
 
   p.on('success', function(res){  });
 
-  var message = (count > 1) ?  sprintf("%1$d new messages!!!!", count) : sprintf("%1$b new message!!!!", count);
-  console.log(sprintf("Pushing \"%s\" to your device.", message))
+  var message = (count > 1) ?  sprintf("%1$d new messages", count) : sprintf("%1$d new message", count);
+  console.log("Pushing \"%s\" to your device.", message)
 
   p.message(message);
 
@@ -112,6 +124,6 @@ check.on('new', function(count){
 });
 
 
-clearScreen();
+GLOBAL.pushNotifier.clearScreen();
 
 check.start()
