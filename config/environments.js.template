@@ -1,0 +1,17 @@
+var path = require('path');
+
+exports.development = {
+  /**
+   * Credentials created by and/or required for GoogleAPIs
+   * @type {Object}
+   */
+  gmail: {
+    CLIENT_ID: '{_id_created_by_google_apis}.apps.googleusercontent.com',
+    CLIENT_SECRET: '{_secret_}',
+    REDIRECT: 'http://localhost:3000'
+  },
+  "redis" : "redis://username:password@localhost:9927/",
+  "host" : "localhost",
+  "port" : 3000,
+  "client_dir" : path.resolve(__dirname, './public'),
+}
