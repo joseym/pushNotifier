@@ -24,7 +24,7 @@ function Check(q, redis, polling){
   this.oauth2Client = new OAuth2Client(config.gmail.CLIENT_ID, config.gmail.CLIENT_SECRET, config.gmail.REDIRECT);
   this.error = null;
   this.q = q;
-  this.polling = polling || 5000;
+  this.polling = parseInt(polling) || 5000;
 
 };
 
@@ -295,6 +295,7 @@ Check.prototype.getMessages = function(err){
   loop(function(){
 
     this.interval = self.polling + (Math.floor(Math.random() * 700) + 1);
+    console.log(this.interval);
 
     client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
 

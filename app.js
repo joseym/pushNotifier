@@ -28,21 +28,23 @@ var Push = require('./push.js')
   , Gmail = require('./mailcheck.js')
 ;
 
-if(_.indexOf(process.argv, "clear") >= 0){
+var arguments = {
+  query: process.argv[_.indexOf(process.argv, "-q") + 1] || null,
+  clear: _.indexOf(process.argv, "-c") >= 0,
+  pollRate: process.argv[_.indexOf(process.argv, "-t") + 1] || 5000
+};
 
+if(arguments.clear){
   client.del("code");
   client.del("token");
   client.del("expiration");
-
 }
-
-var q = process.argv[_.indexOf(process.argv, "-q") + 1];
 
 /**
  * Gmail check method
  * @type {Gmail}
  */
-var Mail = new Gmail(q, client);
+var Mail = new Gmail(arguments.query, client, arguments.pollRate);
 
 Mail.on('verify', function(url){
 
@@ -82,12 +84,11 @@ Mail.on('error', function(err){
 
   p.on('success', function(res){
     console.error(err);
-    process.exit(1);
   });
 
   p.title('Check Error');
   p.sound('siren');
-  p.message(err.toString());
+  p.message(JSON.stringify(err, ["message", "arguments", "type", "name"]));
 
   p.send();
 
