@@ -1,5 +1,6 @@
 var path = require('path');
 var _ = require('lodash');
+var fs = require('fs');
 
 /**
  * Configuration
@@ -8,7 +9,7 @@ var _ = require('lodash');
  */
 module.exports = function(env) {
 
-  var config = require('./config/environments.js') || {};
+  var config = (fs.existsSync('./config/environments.js')) ? require('./config/environments.js') : {}
 
   config.production = {
     "gmail" : {
