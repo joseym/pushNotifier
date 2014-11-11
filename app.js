@@ -36,30 +36,27 @@ if(_.indexOf(process.argv, "clear") >= 0){
 
 }
 
-// var q = 'from:(alliebaldridge@gmail.com) is:unread';
-var q = 'from:(*@mortlabs.com) is:unread';
+var q = process.argv[_.indexOf(process.argv, "-q") + 1];
 
 /**
  * Gmail check method
  * @type {Gmail}
  */
-var check = new Gmail(q, client);
+var Mail = new Gmail(q, client);
 
-check.on('get_code', function(url){
-
-  console.log(process.argv);
+Mail.on('verify', function(url){
 
   var p = new Push({
-      // These values correspond to the parameters detailed on https://pushover.net/api
-      // 'message' is required. All other values are optional.
-      title: "Login",
-      message: 'Please reauthenticate.',   // required
-      url: url,
-      url_title: 'Get Code',
-      sound: 'bugle',
-      device: 'iphone6',
-      priority: 1
-  });
+    // These values correspond to the parameters detailed on https://pushover.net/api
+    // 'message' is required. All other values are optional.
+    title: "Login",
+    message: 'Please reauthenticate.',   // required
+    url: url,
+    url_title: 'Get Code',
+    sound: 'bugle',
+    device: 'iphone6',
+    priority: 1
+});
 
   p.on('success', function(res){
     console.log(res);
@@ -79,7 +76,7 @@ check.on('get_code', function(url){
  * These will normally be due to an auth issue...
  * Need a way to handle that easily
  */
-check.on('error', function(err){
+Mail.on('error', function(err){
 
   var p = new Push();
 
@@ -104,7 +101,7 @@ check.on('error', function(err){
  * If the count is the same then this will not fire, as the app assumes they
  * haven't been checked yet.
  */
-check.on('new', function(count){
+Mail.on('new', function(count){
 
   GLOBAL.pushNotifier.clearScreen();
 
@@ -112,7 +109,7 @@ check.on('new', function(count){
 
   p.on('success', function(res){  });
 
-  var message = (count > 1) ?  sprintf("%1$d new messages", count) : sprintf("%1$d new message", count);
+  var message = (count > 1) ? sprintf("%1$d new messages", count) : sprintf("%1$d new message", count);
   console.log("Pushing \"%s\" to your device.", message)
 
   p.message(message);
@@ -126,4 +123,4 @@ check.on('new', function(count){
 
 GLOBAL.pushNotifier.clearScreen();
 
-check.start()
+Mail.Authenticate()
