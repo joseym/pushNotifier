@@ -8,7 +8,7 @@ var _ = require('lodash');
  */
 module.exports = function(env) {
 
-  var config = require('./config/environments.js');
+  var config = require('./config/environments.js') || {};
 
   config.production = {
     "gmail" : {
