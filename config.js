@@ -17,13 +17,15 @@ module.exports = function(env) {
       CLIENT_SECRET: process.env.G_CLIENT_SECRET,
       REDIRECT: process.env.G_REDIRECT
     },
+    "pushover" : {
+      user: process.env.P_USER,
+      token: process.env.P_TOKEN
+    }
     "redis" : process.env.REDISTOGO_URL,
     "host" : "localhost",
     "port" : process.env.PORT,
     "client_dir" : path.resolve(__dirname, './public'),
   }
-
-  console.log(config);
 
   if (config.hasOwnProperty(env)) {
     return config[env];

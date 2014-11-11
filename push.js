@@ -1,4 +1,5 @@
 var push = require('pushover-notifications')
+  , config = GLOBAL.pushNotifier.config
   , util = require("util")
   , _ = require("lodash")
   , EventEmitter  = require("events").EventEmitter;;
@@ -16,10 +17,7 @@ function Push(options, payload){
 
   options = _.defaults(options, {});
 
-  this.config = {
-    user: 'u9m7s9Jr12vcpNDirx64Zmvk7iSm7u',
-    token: 'akWcbbNdPiM5ToyvXBSPNpPgZ1V9cw'
-  }
+  this.config = config.pushover;
 
   var defaultPayload = {
       title: "Mail",

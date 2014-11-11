@@ -10,6 +10,10 @@ exports.development = {
     CLIENT_SECRET: '{_secret_}',
     REDIRECT: 'http://localhost:3000'
   },
+  "pushover" : {
+    user: process.env.P_USER,
+    token: process.env.P_TOKEN
+  },
   "redis" : "redis://username:password@localhost:9927/",
   "host" : "localhost",
   "port" : 3000,
