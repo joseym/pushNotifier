@@ -9,7 +9,7 @@ var fs = require('fs');
  */
 module.exports = function(env) {
 
-  var config = (fs.existsSync('./config/environments.js')) ? require('./config/environments.js') : {}
+  var config = (fs.existsSync('./config/environments.js')) ? require(path.resolve(__dirname, './config/environments.js')) : {}
 
   config.production = {
     "gmail" : {
@@ -22,6 +22,8 @@ module.exports = function(env) {
     "port" : process.env.PORT,
     "client_dir" : path.resolve(__dirname, './public'),
   }
+
+  console.log(config);
 
   if (config.hasOwnProperty(env)) {
     return config[env];

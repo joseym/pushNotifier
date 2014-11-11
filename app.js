@@ -114,7 +114,7 @@ Mail.on('new', function(count){
 
   p.message(message);
 
-  p.url('googlegmail:///');
+  // p.url('googlegmail:///');
 
   p.send();
 
