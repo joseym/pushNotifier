@@ -13,14 +13,14 @@ module.exports = function(env) {
 
   config.production = {
     "gmail" : {
-      CLIENT_ID: process.env.G_CLIENT_ID,
-      CLIENT_SECRET: process.env.G_CLIENT_SECRET,
-      REDIRECT: process.env.G_REDIRECT
+      "CLIENT_ID": process.env.G_CLIENT_ID,
+      "CLIENT_SECRET": process.env.G_CLIENT_SECRET,
+      "REDIRECT": process.env.G_REDIRECT
     },
     "pushover" : {
-      user: process.env.P_USER,
-      token: process.env.P_TOKEN
-    }
+      "user": process.env.P_USER,
+      "token": process.env.P_TOKEN
+    },
     "redis" : process.env.REDISTOGO_URL,
     "host" : "localhost",
     "port" : process.env.PORT,
