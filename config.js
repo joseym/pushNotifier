@@ -9,7 +9,7 @@ var fs = require('fs');
  */
 module.exports = function(env) {
 
-  var config = (fs.existsSync('./config/environments.js')) ? require(path.resolve(__dirname, './config/environments.js')) : {}
+  var config = (fs.existsSync(path.resolve(__dirname, './config/environments.js'))) ? require(path.resolve(__dirname, './config/environments.js')) : {}
 
   config.production = {
     "gmail" : {
