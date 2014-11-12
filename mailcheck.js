@@ -25,6 +25,7 @@ function Check(q, redis, polling){
   this.error = null;
   this.q = q;
   this.polling = parseInt(polling) || 5000;
+  this.backdown = false;
 
 };
 
@@ -47,7 +48,12 @@ function listEmails(err, messages) {
 
   var self = this;
 
-  if (err) return self.emit('error', err)
+  if (err) {
+    if(parseInt(err.code) == 429) self.backdown = true;
+    return self.emit('error', err);
+  }
+
+  self.backdown = false;
 
   var count = messages.resultSizeEstimate;
 
@@ -294,7 +300,11 @@ Check.prototype.getMessages = function(err){
    */
   loop(function(){
 
-    this.interval = self.polling + (Math.floor(Math.random() * 700) + 1);
+    if(self.backdown) {
+      this.interval += (Math.floor(Math.random() * 700) + 1);
+    }
+
+    console.log(this.interval);
 
     client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
 
