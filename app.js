@@ -86,11 +86,13 @@ Mail.on('error', function(err){
     console.error(err);
   });
 
-  p.title('Check Error');
-  p.sound('siren');
-  p.message(JSON.stringify(err, ["message", "arguments", "type", "name"]));
+  if(err.message){
+    p.title('Check Error');
+    p.sound('siren');
+    p.message(JSON.stringify(err, ["code", "message", "arguments", "type", "name"]));
 
-  p.send();
+    p.send();
+  }
 
 });
 

@@ -295,7 +295,6 @@ Check.prototype.getMessages = function(err){
   loop(function(){
 
     this.interval = self.polling + (Math.floor(Math.random() * 700) + 1);
-    console.log(this.interval);
 
     client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
 
