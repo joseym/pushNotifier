@@ -114,7 +114,7 @@ Mail.on('new', function(count){
   p.on('success', function(res){  });
 
   var message = (count > 1) ? sprintf("%1$d new messages", count) : sprintf("%1$d new message", count);
-  console.log("Pushing \"%s\" to your device.", message)
+  util.log("Pushing \"%s\" to your device.", message)
 
   p.message(message);
 
