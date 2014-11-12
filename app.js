@@ -16,6 +16,7 @@ GLOBAL.pushNotifier = {
 };
 
 var config = GLOBAL.pushNotifier.config
+  , util = require('util')
   , rtg = require("url").parse(config.redis)
   , client = GLOBAL.pushNotifier.redis.createClient(rtg.port, rtg.hostname)
   , _ = GLOBAL.pushNotifier._
@@ -58,7 +59,7 @@ Mail.on('verify', function(url){
     sound: 'bugle',
     device: 'iphone6',
     priority: 1
-});
+  });
 
   p.on('success', function(res){
     console.log(res);

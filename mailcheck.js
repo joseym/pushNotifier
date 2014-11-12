@@ -25,7 +25,8 @@ function Check(q, redis, polling){
   this.error = null;
   this.q = q;
   this.polling = parseInt(polling) || 5000;
-  this.backdown = false;
+  this.backoff = false;
+
 
 };
 
@@ -49,11 +50,14 @@ function listEmails(err, messages) {
   var self = this;
 
   if (err) {
-    if(parseInt(err.code) == 429) self.backdown = true;
+    if(parseInt(err.code) == 429) {
+      util.debug('Hit Rate Limit. Starting exponential backoff...');
+      self.backoff = true;
+    }
     return self.emit('error', err);
   }
 
-  self.backdown = false;
+  self.backoff = false;
 
   var count = messages.resultSizeEstimate;
 
@@ -75,7 +79,7 @@ function initiateTokenRefresh(err, tokens){
   var self = this;
 
   if(err){
-    console.log(err);
+    util.debug('Token Refresh Error: ' + err);
     client.del("code");
     client.del("refresh");
     client.del("token");
@@ -100,14 +104,10 @@ function getNewToken(err, tokens) {
 
   var self = this;
 
-  if(err) console.log(err);
+  if(err) util.log('Tokenization Error: ' + err);
 
   if(tokens){
 
-    console.log(tokens);
-
-    // set tokens to the client
-    // TODO: tokens should be set by OAuth2 client.
     self.oauth2Client.setCredentials(tokens);
 
     client.set("token", tokens.access_token);
@@ -141,7 +141,7 @@ function cheatExpiry(err, exp){
     client.get("token", function(err, token){
       if(token){
         self.refreshAccessToken(token, function(err){
-          console.log('Refreshing token on ' + moment().format('MM/DD/YY [at] h:mma'));
+          util.log('Refreshing token on ' + moment().format('MM/DD/YY [at] h:mma'));
           clearInterval(messagePoll);
           return self.getMessages(err);
         });
@@ -151,6 +151,9 @@ function cheatExpiry(err, exp){
 
 };
 
+Check.prototype.Backoff = function(bool){
+  this.backoff = bool;
+}
 
 /**
  * Authenticate against GoogleAPIs
@@ -193,7 +196,7 @@ Check.prototype.Authenticate = function(q){
  */
 Check.prototype.refreshAccessToken = function(access_token, cb) {
 
-  console.log('Refreshing Access Token')
+  util.log('Refreshing Access Token')
 
   var self = this;
 
@@ -203,6 +206,7 @@ Check.prototype.refreshAccessToken = function(access_token, cb) {
   client.get("refresh", function(err, refresh_token){
 
     if(err){
+      util.debug('Refresh Token Error: ' + err)
       self.emit('error', err)
     } else {
 
@@ -249,13 +253,13 @@ Check.prototype.getAccessToken = function(callback) {
 
     if(!refresh_token) url += "&approval_prompt=force";
 
-    console.log('Visit the url: ', url);
+    util.log('Visit the url: ', url);
 
     self.emit('verify', url)
 
     var poll = setInterval(function(){
 
-      console.log("Looking for a new code...");
+      util.log("Looking for a new code...");
 
       client.get("code", function(err, code){
 
@@ -291,7 +295,10 @@ Check.prototype.getMessages = function(err){
 
   var self = this;
 
-  if(err) return self.emit('error', err)
+  if(err) {
+    util.debug('Error retrieving messages: ' + err)
+    return self.emit('error', err);
+  }
 
   /**
    * This looping method allows us to add a random number of milliseconds to
@@ -300,11 +307,13 @@ Check.prototype.getMessages = function(err){
    */
   loop(function(){
 
-    if(self.backdown) {
+    // This is supposed to help with API rate limits.
+    // We hit the wall, and slow down our requests until they get thru.
+    if(self.backoff) {
       this.interval += (Math.floor(Math.random() * 700) + 1);
+    } else {
+      this.interval = self.polling;
     }
-
-    console.log(this.interval);
 
     client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
 
