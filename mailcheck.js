@@ -50,7 +50,7 @@ function listEmails(err, messages) {
   var self = this;
 
   if (err) {
-    if(parseInt(err.code) == 429) {
+    if(parseInt(err.code) == 429 || parseInt(err.code) == 403) {
       util.debug('Hit Rate Limit. Starting exponential backoff...');
       self.backoff = true;
     }
