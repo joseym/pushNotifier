@@ -18,6 +18,14 @@ The script will take any gmail search query and send you a push notification usi
 node app.js -q "from(client@domain.com) is:unread"
 ~~~
 
+##### Options
+
+Parameter   | Purpose | Example
+----------- | --------| -----------
+-q          | The gmail query to poll against | "from(*@tulsajs.com) is:unread"
+-c          | Clear tokens (start fresh) | `n/a`
+-t          | Define a polling time | -t 3000
+
 ### Technologies Integrated
 
 - [node.js](http://nodejs.org/)
