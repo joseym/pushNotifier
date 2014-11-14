@@ -26,7 +26,7 @@ function Check(q, redis, polling){
   this.q = q;
   this.polling = parseInt(polling) || 5000;
   this.backoff = false;
-
+  this.restart = false; // when true we'll restart the loop to avoid overlapping
 
 };
 
@@ -142,7 +142,6 @@ function cheatExpiry(err, exp){
       if(token){
         self.refreshAccessToken(token, function(err){
           util.log('Refreshing token on ' + moment().format('MM/DD/YY [at] h:mma'));
-          clearInterval(messagePoll);
           return self.getMessages(err);
         });
       }
@@ -196,9 +195,9 @@ Check.prototype.Authenticate = function(q){
  */
 Check.prototype.refreshAccessToken = function(access_token, cb) {
 
-  util.log('Refreshing Access Token')
-
   var self = this;
+
+  self.emit('refresh', access_token);
 
   /**
    * Refresh Auth
@@ -306,6 +305,13 @@ Check.prototype.getMessages = function(err){
    * errors getting returned from GoogleAPI
    */
   loop(function(){
+
+    // restart is defined by a token refresh
+    // This is a failsafe to ensure overlapping is avoided.
+    if(self.restart){
+      this.stop();
+      self.restart = false;
+    }
 
     // This is supposed to help with API rate limits.
     // We hit the wall, and slow down our requests until they get thru.

@@ -16,6 +16,7 @@ GLOBAL.pushNotifier = {
 };
 
 var config = GLOBAL.pushNotifier.config
+  , loop = require('./looper')
   , util = require('util')
   , rtg = require("url").parse(config.redis)
   , client = GLOBAL.pushNotifier.redis.createClient(rtg.port, rtg.hostname)
@@ -124,7 +125,11 @@ Mail.on('new', function(count){
 
 });
 
+Mail.on('refresh', function(){
+  util.log('Refreshing Access Token');
+  this.restart = true;
+})
 
 GLOBAL.pushNotifier.clearScreen();
 
-Mail.Authenticate()
+Mail.Authenticate();
