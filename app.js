@@ -16,6 +16,7 @@ GLOBAL.pushNotifier = {
 };
 
 var config = GLOBAL.pushNotifier.config
+  , loop = require('./looper')
   , util = require('util')
   , rtg = require("url").parse(config.redis)
   , client = GLOBAL.pushNotifier.redis.createClient(rtg.port, rtg.hostname)
@@ -91,7 +92,6 @@ Mail.on('error', function(err){
     p.title('Check Error');
     p.sound('siren');
     p.message(JSON.stringify(err, ["code", "message", "arguments", "type", "name"]));
-
     p.send();
   }
 
@@ -107,7 +107,7 @@ Mail.on('error', function(err){
  */
 Mail.on('new', function(count){
 
-  GLOBAL.pushNotifier.clearScreen();
+  // GLOBAL.pushNotifier.clearScreen();
 
   var p = new Push();
 
@@ -124,7 +124,35 @@ Mail.on('new', function(count){
 
 });
 
+/**
+ * Start Polling
+ *
+ * This event is fired upon authentication, and token refresh
+ * We use a custom looping method that allows us to alter the interval
+ * We require this for exponential backoff.
+ */
+Mail.on('startPolling', function(){
+  var self = this;
+  this.looper = loop(function(){
+    // Poll google apis to get number of new messages
+    self.getMessages();
+  }, self.polling);
+});
 
-GLOBAL.pushNotifier.clearScreen();
+/**
+ * Stop Polling
+ *
+ * This event fires when we cheat token expiry - we stop polling and once the
+ * token refreshes the refresh method will emit the `startPolling` event so we
+ * can get started again. This helps avoid overlapping and issues
+ * with exceeding the API rate limit.
+ */
+Mail.on('stopPolling', function(){
+  var self = this;
+  self.looper.stop(); // stop the looping request.
+  self.looper = null; // clear it completely.
+});
+
+// GLOBAL.pushNotifier.clearScreen();
 
 Mail.Authenticate()
