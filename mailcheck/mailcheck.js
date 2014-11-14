@@ -1,5 +1,5 @@
 var util = require("util")
-  , loop = require('./looper')
+  , loop = require('./../looper')
   , config = GLOBAL.pushNotifier.config
   , _ = GLOBAL.pushNotifier._
   , EventEmitter  = require("events").EventEmitter
