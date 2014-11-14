@@ -26,7 +26,7 @@ function Check(q, redis, polling){
   this.q = q;
   this.polling = parseInt(polling) || 5000;
   this.backoff = false;
-  this.restart = false; // when true we'll restart the loop to avoid overlapping
+  this.looper = null;
 
 };
 
@@ -80,16 +80,15 @@ function initiateTokenRefresh(err, tokens){
 
   if(err){
     util.debug('Token Refresh Error: ' + err);
+    self.emit('stopPolling');
     client.del("code");
     client.del("refresh");
     client.del("token");
     client.del("expiration");
-    return self.getAccessToken(cb);
   } else {
     if(typeof tokens.refresh_token !== 'undefined') client.set("refresh", tokens.refresh_token);
     client.set("token", tokens.access_token);
     client.set("expiration", tokens.expiry_date);
-    return self.getMessages(null);
   }
 
 };
@@ -115,7 +114,7 @@ function getNewToken(err, tokens) {
     client.set("expiration", tokens.expiry_date);
 
     client.del("code", function(err){
-      self.getMessages(err);
+      self.emit('startPolling');
     });
 
   }
@@ -135,17 +134,19 @@ function cheatExpiry(err, exp){
 
   time_remaining = (moment(parseInt(exp)).diff(Date.now(), 'minutes'));
 
-  // GLOBAL.pushNotifier.clearScreen();
+  if(self.looper){
 
-  if(time_remaining < 5){
-    client.get("token", function(err, token){
-      if(token){
-        self.refreshAccessToken(token, function(err){
-          util.log('Refreshing token on ' + moment().format('MM/DD/YY [at] h:mma'));
-          return self.getMessages(err);
-        });
-      }
-    })
+    if(time_remaining < 5){
+      self.emit('stopPolling');
+      client.get("token", function(err, token){
+        if(token){
+          self.refreshAccessToken(token, function(err){
+            self.emit('startPolling')
+          });
+        }
+      })
+    }
+
   }
 
 };
@@ -172,11 +173,9 @@ Check.prototype.Authenticate = function(q){
   client.get("token", function(err, token){
 
     if(!err && token && token != '') {
-      self.refreshAccessToken(token, function(err){
-        return self.getMessages(err);
-      });
+      self.refreshAccessToken(token);
     } else {
-      self.getAccessToken(self.getMessages(err));
+      self.getAccessToken();
     }
 
   });
@@ -193,7 +192,7 @@ Check.prototype.Authenticate = function(q){
  * @param {String}   access_token   Cached token
  * @param {Function} cb             Callback method
  */
-Check.prototype.refreshAccessToken = function(access_token, cb) {
+Check.prototype.refreshAccessToken = function(access_token) {
 
   var self = this;
 
@@ -215,6 +214,7 @@ Check.prototype.refreshAccessToken = function(access_token, cb) {
       });
 
       self.oauth2Client.refreshAccessToken(function(err, tokens){
+        if(!err) self.emit('startPolling');
         return initiateTokenRefresh.call(self, err, tokens);
       })
 
@@ -238,7 +238,7 @@ Check.prototype.refreshAccessToken = function(access_token, cb) {
  *
  * @param {Function} callback [description]
  */
-Check.prototype.getAccessToken = function(callback) {
+Check.prototype.getAccessToken = function() {
 
   var self = this;
 
@@ -299,39 +299,23 @@ Check.prototype.getMessages = function(err){
     return self.emit('error', err);
   }
 
-  /**
-   * This looping method allows us to add a random number of milliseconds to
-   * our request, hopefully working thru the occasional `Exceeded rate limite`
-   * errors getting returned from GoogleAPI
-   */
-  loop(function(){
+  // This is supposed to help with API rate limits.
+  // We hit the wall, and slow down our requests until they get thru.
+  if(self.backoff) {
+    self.looper.interval += (Math.floor(Math.random() * 700) + 1);
+  } else {
+    self.looper.interval = self.polling;
+  }
 
-    // restart is defined by a token refresh
-    // This is a failsafe to ensure overlapping is avoided.
-    if(self.restart){
-      this.stop();
-      self.restart = false;
-    }
+  client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
 
-    // This is supposed to help with API rate limits.
-    // We hit the wall, and slow down our requests until they get thru.
-    if(self.backoff) {
-      this.interval += (Math.floor(Math.random() * 700) + 1);
-    } else {
-      this.interval = self.polling;
-    }
+  if(typeof self.oauth2Client.credentials.access_token !== 'undefined'){
 
-    client.get("expiration", function(err, exp){ return cheatExpiry.call(self, err, exp); });
+    gmail.users.messages.list({ userId: 'me', auth: self.oauth2Client, q: self.q }, function(err, messages) {
+      return listEmails.call(self, err, messages);
+    })
 
-    if(typeof self.oauth2Client.credentials.access_token !== 'undefined'){
-
-      gmail.users.messages.list({ userId: 'me', auth: self.oauth2Client, q: self.q }, function(err, messages) {
-        return listEmails.call(self, err, messages);
-      })
-
-    }
-
-  }, self.polling);
+  }
 
 }
 
