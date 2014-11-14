@@ -27,7 +27,7 @@ var config = GLOBAL.pushNotifier.config
 client.auth(rtg.auth.split(":")[1]);
 
 var Push = require('./push.js')
-  , Gmail = require('./mailcheck.js')
+  , Gmail = require('./mailcheck/mailcheck.js')
 ;
 
 var arguments = {

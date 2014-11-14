@@ -20,7 +20,7 @@ node app.js -q "from(client@domain.com) is:unread"
 
 ##### Options
 
-Parameter   | Purpose | Example
+Parameter   | Purpose | Usage
 ----------- | --------| -----------
 -q          | The gmail query to poll against | "from(*@tulsajs.com) is:unread"
 -c          | Clear tokens (start fresh) | `n/a`
@@ -29,8 +29,10 @@ Parameter   | Purpose | Example
 ### Technologies Integrated
 
 - [node.js](http://nodejs.org/)
-- [Express](http://expressjs.com/) - For the initial API token auth
-- [Redis](http://redis.io/) - For basic data storage (persistent tokens)
+- [Express](http://expressjs.com/)
+  - For the initial API token auth
+- [Redis](http://redis.io/)
+  - For basic data storage (persistent tokens)
 - [Pushover](https://pushover.net/)
 - [GMail API](https://developers.google.com/gmail/api/)
 - [Forever CLI](https://github.com/nodejitsu/forever) _optional_
