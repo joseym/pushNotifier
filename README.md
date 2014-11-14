@@ -1,5 +1,7 @@
 ### Custom pushNotifier
 
+- [Mail Check Explaination](https://github.com/joseym/pushNotifier/tree/master/mailcheck)
+
 > I had a need to get push notifications for filtered (inbox skipped) messages in gmail
 >
 > The goal for this project was to allow me to get notifications for messages I deem high priority.
